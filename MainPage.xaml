@@ -6,9 +6,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Width="800" Height="400">
 
     <Grid>
-
+        <StackPanel VerticalAlignment="Center">
+            <Button x:Name="OpenFileButton" HorizontalAlignment="Center" FontFamily="Arial" FontSize="20" CornerRadius="5"/>
+            <TextBlock x:Name="LabelOR" HorizontalAlignment="Center" FontFamily="Arial" FontSize="18"/>
+            <TextBlock x:Name="LabelDragAndDrop" HorizontalAlignment="Center" FontFamily="Arial" FontSize="18"/>
+        </StackPanel>
     </Grid>
 </Page>
