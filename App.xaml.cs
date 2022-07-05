@@ -7,6 +7,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -71,6 +72,9 @@ namespace MyMusicPlayer
                 // Обеспечение активности текущего окна
                 Window.Current.Activate();
             }
+
+            ApplicationView.PreferredLaunchViewSize = new Size(800, 400);
+            ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
         }
 
         /// <summary>
