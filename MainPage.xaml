@@ -9,10 +9,15 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Width="800" Height="400">
 
     <Grid>
-        <StackPanel VerticalAlignment="Center">
-            <Button x:Name="OpenFileButton" HorizontalAlignment="Center" FontFamily="Arial" FontSize="20" CornerRadius="5"/>
-            <TextBlock x:Name="LabelOR" HorizontalAlignment="Center" FontFamily="Arial" FontSize="18"/>
-            <TextBlock x:Name="LabelDragAndDrop" HorizontalAlignment="Center" FontFamily="Arial" FontSize="18"/>
-        </StackPanel>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0">
+            <StackPanel VerticalAlignment="Center" AllowDrop="True" DragOver="Grid_DragOverCustomized" DragLeave="Grid_DragLeave" Drop="Grid_Drop" >
+                <Button x:Name="OpenFileButton" HorizontalAlignment="Center" FontFamily="Arial" FontSize="20" CornerRadius="5" Click="OpenFileButton_Click" AllowDrop="False" />
+                <TextBlock x:Name="LabelOR" HorizontalAlignment="Center" FontFamily="Arial" FontSize="18"/>
+                <TextBlock x:Name="LabelDragAndDrop" HorizontalAlignment="Center" FontFamily="Arial" FontSize="18"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>
