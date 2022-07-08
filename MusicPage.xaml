@@ -8,8 +8,172 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Width="800" Height="400">
 
-    <Grid>
-        <ListView x:Name="listMusic"/>
+    <Page.Resources>
+        <Style x:Key="CircleButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}"/>
+            <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundTransparentBrush}"/>
+            <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}"/>
+            <Setter Property="Padding" Value="8,4,8,4"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
+            <Setter Property="UseSystemFocusVisuals" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid x:Name="RootGrid">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal">
+                                        <Storyboard>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="PointerOver">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Fill" Storyboard.TargetName="BorderCircle">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightBaseMediumLowBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentPresenter">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightBaseHighBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Fill" Storyboard.TargetName="BorderCircle">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlBackgroundBaseMediumLowBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentPresenter">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightBaseHighBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerDownThemeAnimation Storyboard.TargetName="RootGrid"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Fill" Storyboard.TargetName="BorderCircle">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentPresenter">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Stroke" Storyboard.TargetName="BorderCircle">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlDisabledTransparentBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <ContentPresenter x:Name="ContentPresenter" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw" ContentTemplate="{TemplateBinding ContentTemplate}" ContentTransitions="{TemplateBinding ContentTransitions}" Content="{TemplateBinding Content}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Padding="{TemplateBinding Padding}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            <Ellipse x:Name="BorderCircle" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="0"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
 
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <ListView x:Name="listMusic"/>
+            </Grid>
+            <Grid Grid.Row="1">
+                <Button x:Name="AddFilesButton" Content="Добавить треки" HorizontalAlignment="Center" Margin="0,20,0,20" Width="140" Height="35" CornerRadius="5"/>
+            </Grid>
+        </Grid>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="200"/>
+            </Grid.RowDefinitions>
+            <Grid x:Name="RowInfo" Grid.Row="0" Height="Auto" Width="Auto">
+                <StackPanel>
+                    <TextBlock x:Name="trackName" Text="trackName" HorizontalAlignment="Center"/>
+                    <Image Height="{Binding Height, ElementName=RowInfo, Mode=TwoWay}" Width="{Binding Width, ElementName=RowInfo, Mode=TwoWay}" Source="/Assets/SplashScreen.scale-200.png"/>
+                    <!--<Slider x:Name="SliderSize" Width="300"/>-->
+                </StackPanel>
+            </Grid>
+            <Grid Grid.Row="1">
+                <StackPanel>
+                    <Slider x:Name="SliderTime" Width="300" Margin="0,10,0,0"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0">
+                            <TextBlock x:Name="CurrentTime" Text="00:00" Margin="40,0,0,0"/>
+                        </Grid>
+                        <Grid Grid.Column="1">
+                            <TextBlock x:Name="DurationTime" Text="00:00" Margin="0,0,35,0" HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Grid>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="130"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="0">
+                                <Button x:Name="PreviousButton" Width="50" Height="50" BorderBrush="Black" Style="{StaticResource CircleButtonStyle}" HorizontalAlignment="Center" FontSize="20" FontFamily="Arial" FontWeight="Normal" Click="Previous_Click">
+                                    <Image x:Name="PreviousImage" Source="/Assets/previousButton.png"/>
+                                </Button>
+                            </Grid>
+                            <Grid Grid.Column="1">
+                                <Button x:Name="PlayButton" Width="50" Height="50" BorderBrush="Black" Style="{StaticResource CircleButtonStyle}" HorizontalAlignment="Center" FontSize="20" FontFamily="Arial" FontWeight="Normal" Click="Play_Click">
+                                    <Image x:Name="PlayImage" Source="/Assets/play.png"/>
+                                </Button>
+                            </Grid>
+                            <Grid Grid.Column="2">
+                                <Button x:Name="NextButton" Width="50" Height="50" BorderBrush="Black" Style="{StaticResource CircleButtonStyle}" HorizontalAlignment="Center" FontSize="20" FontFamily="Arial" FontWeight="Normal" Click="Next_Click">
+                                    <Image x:Name="NextImage" Source="/Assets/nextButton.png"/>
+                                </Button>
+                            </Grid>
+                        </Grid>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="0">
+                                <Button x:Name="RepeatButton" Width="30" Height="30" BorderBrush="Black" Style="{StaticResource CircleButtonStyle}" HorizontalAlignment="Center" FontSize="10" FontFamily="Arial" FontWeight="Normal" Click="Repeat_Click">
+                                    <Image x:Name="RepeatImage" Source="/Assets/repeat.png"/>
+                                </Button>
+                            </Grid>
+                            <Grid Grid.Column="1">
+                                <Button x:Name="ShuffleButton" Width="30" Height="30" BorderBrush="Black" Style="{StaticResource CircleButtonStyle}" HorizontalAlignment="Center" FontSize="10" FontFamily="Arial" FontWeight="Normal" Click="Shuffle_Click">
+                                    <Image x:Name="ShuffleImage" Source="/Assets/shuffle.png"/>
+                                </Button>
+                            </Grid>
+                            <Grid Grid.Column="2">
+                                <Button x:Name="VolumeButton" Width="30" Height="30" BorderBrush="Black" Style="{StaticResource CircleButtonStyle}" HorizontalAlignment="Center" FontSize="10" FontFamily="Arial" FontWeight="Normal" Click="Volume_Click">
+                                    <Image x:Name="VolumeImage" Source="/Assets/volume.png"/>
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </Grid>
     </Grid>
 </Page>
