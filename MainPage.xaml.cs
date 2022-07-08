@@ -73,7 +73,7 @@ namespace MyMusicPlayer
                 await dialog.ShowAsync();
             }
 
-            if (files != null)
+            if (files != null && files.Count != 0)
             {
                 try
                 {
@@ -121,14 +121,17 @@ namespace MyMusicPlayer
                         }
                     }
 
-                    try
+                    if (listMusic.Count != 0)
                     {
-                        Frame.Navigate(typeof(MusicPage), listMusic, new SuppressNavigationTransitionInfo());
-                    }
-                    catch
-                    {
-                        var dialog = new MessageDialog("Не удалось открыть страницу с плеером, попробуйте снова выбрать файл");
-                        await dialog.ShowAsync();
+                        try
+                        {
+                            Frame.Navigate(typeof(MusicPage), listMusic, new SuppressNavigationTransitionInfo());
+                        }
+                        catch
+                        {
+                            var dialog = new MessageDialog("Не удалось открыть страницу с плеером, попробуйте снова выбрать файл");
+                            await dialog.ShowAsync();
+                        }
                     }
                 }
             }
