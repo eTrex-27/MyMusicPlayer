@@ -140,6 +140,7 @@
     <Content Include="Assets\pause.png" />
     <Content Include="Assets\play.png" />
     <Content Include="Assets\previousButton.png" />
+    <Content Include="Assets\refresh.png" />
     <Content Include="Assets\repeat.png" />
     <Content Include="Assets\shuffle.png" />
     <Content Include="Assets\volume.png" />
