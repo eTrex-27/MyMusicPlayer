@@ -106,7 +106,7 @@ namespace MyMusicPlayer
                 await dialog.ShowAsync();
             }
 
-            if (filesList != null && filesList.Count != 0)
+            if (filesList != null)
             {
                 try
                 {

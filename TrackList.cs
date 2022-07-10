@@ -63,5 +63,42 @@ namespace MyMusicPlayer
             string jsonString = JsonConvert.SerializeObject(tracks);
             File.WriteAllText(jsonPath, jsonString);
         }
+
+        public static ObservableCollection<Track> ReindexList(ObservableCollection<Track> tracks)
+        {
+            var id = 1;
+
+            foreach (var track in tracks) track.Id = id++;
+
+            SaveTracks(tracks);
+
+            return GetTracks();
+        }
+
+        public static List<int> RefreshTracks(ObservableCollection<Track> tracks)
+        {
+            List<int> trackIds= new List<int>();
+
+            try
+            {
+                foreach (var track in tracks)
+                {
+                    try
+                    {
+                        if (StorageFile.GetFileFromPathAsync(track.Name).AsTask().Result != null) { }
+                    }
+                    catch
+                    {
+                        trackIds.Add(track.Id);
+                    }
+                }
+            }
+            catch
+            {
+                return new List<int>();
+            }
+
+            return trackIds;
+        }
     }
 }

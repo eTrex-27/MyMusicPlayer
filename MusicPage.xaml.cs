@@ -130,5 +130,85 @@ namespace MyMusicPlayer
                 }
             }
         }
+
+        private void Refresh_Click(object sender, RoutedEventArgs e)
+        {
+            var listIds = TrackList.RefreshTracks(TrackListView.Tracks);
+
+            for (int i = TrackListView.Tracks.Count - 1; i >= 0; i--)
+            {
+                var item = TrackListView.Tracks[i];
+
+                if (listIds.Contains(item.Id))
+                    TrackListView.Tracks.RemoveAt(item.Id - 1);
+            }
+
+            var refreshing = false;
+
+            foreach (var id in listIds)
+            {
+                if (id < TrackListView.Tracks.Count + 1 || TrackListView.Tracks.Count == 0)
+                {
+                    refreshing = true;
+                    break;
+                }
+            }
+
+            if (refreshing)
+            {
+                var refreshList = TrackList.ReindexList(TrackListView.Tracks);
+
+                TrackListView.Tracks.Clear();
+
+                foreach (var item in refreshList)
+                    TrackListView.Tracks.Add(item);
+            }
+        }
+
+        private void RefreshingList(int id)
+        {
+            if (id < TrackListView.Tracks.Count + 1 || TrackListView.Tracks.Count == 0)
+            {
+                var refreshList = TrackList.ReindexList(TrackListView.Tracks);
+
+                TrackListView.Tracks.Clear();
+
+                foreach (var item in refreshList)
+                    TrackListView.Tracks.Add(item);
+            }
+        }
+
+        private async void listMusic_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            try
+            {
+                if (e.OriginalSource as TextBlock != null)
+                {
+                    var messageDialog = new MessageDialog($"Вы хотите удалить трек {((e.OriginalSource as TextBlock).DataContext as Track).GetName}?");
+
+                    messageDialog.Commands.Add(new UICommand("Да", new UICommandInvokedHandler(this.CommandInvokedHandler), (e.OriginalSource as TextBlock).DataContext as Track));
+                    messageDialog.Commands.Add(new UICommand("Отмена", new UICommandInvokedHandler(this.CommandInvokedHandler), (e.OriginalSource as TextBlock).DataContext as Track));
+
+                    messageDialog.DefaultCommandIndex = 0;
+                    messageDialog.CancelCommandIndex = 1;
+
+                    await messageDialog.ShowAsync();
+                }
+            }
+            catch { }
+        }
+
+        private void CommandInvokedHandler(IUICommand command)
+        {
+            if (command.Label.Equals("Да"))
+            {
+                TrackListView.Tracks.RemoveAt((command.Id as Track).Id - 1);
+                RefreshingList((command.Id as Track).Id);
+            }
+            else if (command.Label.Equals("Отмена"))
+            {
+                return;
+            }
+        }
     }
 }
