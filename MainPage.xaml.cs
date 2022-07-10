@@ -17,6 +17,8 @@ using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Popups;
 using Windows.ApplicationModel.DataTransfer;
+using System.Collections.ObjectModel;
+using Windows.Storage.AccessCache;
 
 namespace MyMusicPlayer
 {
@@ -54,7 +56,9 @@ namespace MyMusicPlayer
 
         private async void OpenFileButton_Click(object sender, RoutedEventArgs e)
         {
-            List<StorageFile> files = null;
+            IReadOnlyList<StorageFile> filesList = null;
+
+            ObservableCollection<Track> allTracks = new ObservableCollection<Track>();
 
             try
             {
@@ -63,9 +67,38 @@ namespace MyMusicPlayer
                 openPicker.SuggestedStartLocation = PickerLocationId.MusicLibrary;
                 openPicker.FileTypeFilter.Add(".mp3");
                 openPicker.FileTypeFilter.Add(".wav");
-                var filesList = await openPicker.PickMultipleFilesAsync();
+                filesList = await openPicker.PickMultipleFilesAsync();
 
-                files = filesList.ToList();
+                var currentTracks = TrackList.GetTracks();
+
+                var id = 1;
+
+                foreach (var track in currentTracks)
+                {
+                    try
+                    {
+                        if (StorageFile.GetFileFromPathAsync(track.Name).AsTask().Result != null)
+                        {
+                            allTracks.Add(new Track(id++, track.Name, track.Duration));
+                        }
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
+
+                var countCurrentTracks = allTracks.Count != 0 ? allTracks.Last().Id : 0;
+
+                id = countCurrentTracks + 1;
+
+                var listFiles = TrackList.GetListFiles(currentTracks);
+
+                foreach (var file in filesList)
+                {
+                    if (!listFiles.Contains(file.Path))
+                        allTracks.Add(new Track(id++, file.Path, "0:00"));
+                }
             }
             catch
             {
@@ -73,11 +106,11 @@ namespace MyMusicPlayer
                 await dialog.ShowAsync();
             }
 
-            if (files != null && files.Count != 0)
+            if (filesList != null && filesList.Count != 0)
             {
                 try
                 {
-                    Frame.Navigate(typeof(MusicPage), files, new SuppressNavigationTransitionInfo());
+                    Frame.Navigate(typeof(MusicPage), allTracks, new SuppressNavigationTransitionInfo());
                 }
                 catch
                 {
