@@ -4,8 +4,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Media.Audio;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
@@ -25,6 +27,10 @@ namespace MyMusicPlayer
     {
         BitmapImage bitmapPlay = new BitmapImage(new Uri("ms-appx:///Assets/play.png", UriKind.Absolute));
         BitmapImage bitmapPause = new BitmapImage(new Uri("ms-appx:///Assets/pause.png", UriKind.Absolute));
+
+        public AudioGraph audioGraph { get; set; }
+        public AudioDeviceOutputNode deviceOutputNode { get; set; }
+        public AudioFileInputNode fileInputNode { get; set; }
         public MusicPage()
         {
             this.InitializeComponent();
@@ -34,6 +40,19 @@ namespace MyMusicPlayer
             this.Track = new Track();
 
             PlayImage.Source = bitmapPlay;
+
+            listMusic.SelectedIndex = 0;
+        }
+
+        private async void SetDuration()
+        {
+            foreach (var track in TrackListView.Tracks)
+            {
+                audioGraph = await AudioClass.CreateGraph();
+                fileInputNode = await AudioClass.CreateFileInputNode(track, audioGraph);
+
+                track.Duration = $"{fileInputNode.Duration.Minutes}:{fileInputNode.Duration.Seconds}";
+            }
         }
 
         public TracksViewModel TrackListView { get; set; }
@@ -49,6 +68,8 @@ namespace MyMusicPlayer
             }
 
             TrackList.SaveTracks(tracks);
+
+            //SetDuration();
         }
 
         private void Play_Click(object sender, RoutedEventArgs e)
@@ -85,7 +106,7 @@ namespace MyMusicPlayer
 
         private void Volume_Click(object sender, RoutedEventArgs e)
         {
-
+            
         }
 
         private async void AddFilesButton_Click(object sender, RoutedEventArgs e)
@@ -209,6 +230,28 @@ namespace MyMusicPlayer
             {
                 return;
             }
+        }
+
+        private async void listMusic_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (audioGraph != null) audioGraph.Dispose();
+
+            int trackId;
+            try
+            {
+                trackId = (sender as ListView).SelectedIndex;
+            }
+            catch
+            {
+                return;
+            }
+
+            audioGraph = await AudioClass.CreateGraph();
+            deviceOutputNode = await AudioClass.CreateDefaultDeviceOutputNode(audioGraph);
+            fileInputNode = await AudioClass.CreateFileInputNode(TrackListView.Tracks[trackId], audioGraph);
+            AudioClass.ConnectNodes(fileInputNode, deviceOutputNode);
+
+            audioGraph.Start();
         }
     }
 }

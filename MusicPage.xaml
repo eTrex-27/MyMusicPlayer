@@ -89,7 +89,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
-                <ListView x:Name="listMusic" ItemsSource="{x:Bind TrackListView.Tracks}" RightTapped="listMusic_RightTapped">
+                <ListView x:Name="listMusic" ItemsSource="{x:Bind TrackListView.Tracks}" RightTapped="listMusic_RightTapped" SelectionChanged="listMusic_SelectionChanged">
                     <ListView.ItemTemplate>
                         <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="local:Track">
                             <Grid>
