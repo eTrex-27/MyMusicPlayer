@@ -19,6 +19,7 @@ using Windows.UI.Popups;
 using Windows.ApplicationModel.DataTransfer;
 using System.Collections.ObjectModel;
 using Windows.Storage.AccessCache;
+using Windows.Media.Audio;
 
 namespace MyMusicPlayer
 {
@@ -79,7 +80,14 @@ namespace MyMusicPlayer
                     {
                         if (StorageFile.GetFileFromPathAsync(track.Name).AsTask().Result != null)
                         {
-                            allTracks.Add(new Track(id++, track.Name, track.Duration));
+                            AudioGraph audioGraph = await AudioClass.CreateGraph();
+                            AudioFileInputNode fileInputNode = await AudioClass.CreateFileInputNode(track, audioGraph);
+                            string duration = GetDuration(fileInputNode);
+
+                            allTracks.Add(new Track(id++, track.Name, duration));
+
+                            fileInputNode.Dispose();
+                            audioGraph.Dispose();
                         }
                     }
                     catch
@@ -118,6 +126,37 @@ namespace MyMusicPlayer
                     await dialog.ShowAsync();
                 }
             }
+        }
+
+        private static string GetDuration(AudioFileInputNode fileInputNode)
+        {
+            var duration = "";
+
+            var seconds = fileInputNode.Duration.Seconds.ToString();
+
+            var minutes = fileInputNode.Duration.Minutes.ToString();
+
+            var hours = fileInputNode.Duration.Hours.ToString();
+
+            if (minutes.Length == 1)
+                minutes = "0" + minutes;
+
+            if (seconds.Length == 1)
+                seconds = "0" + seconds;
+
+            if (!hours.Equals("0"))
+            {
+                if (hours.Length == 1)
+                    hours = "0" + hours;
+
+                duration = $"{hours}:{minutes}:{seconds}";
+            }
+            else
+            {
+                duration = $"{minutes}:{seconds}";
+            }
+
+            return duration;
         }
 
         private void Grid_DragOverCustomized(object sender, DragEventArgs e)

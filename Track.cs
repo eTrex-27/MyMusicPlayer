@@ -7,6 +7,7 @@ using Windows.Storage;
 using Newtonsoft.Json;
 using System.IO;
 using System.Collections.ObjectModel;
+using Windows.Media.Audio;
 
 namespace MyMusicPlayer
 {
