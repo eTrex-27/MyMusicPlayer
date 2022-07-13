@@ -119,7 +119,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="AudioClass.cs" />
+    <Compile Include="Controllers\AudioClass.cs" />
     <Compile Include="MusicPage.xaml.cs">
       <DependentUpon>MusicPage.xaml</DependentUpon>
     </Compile>
@@ -127,8 +127,10 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Track.cs" />
-    <Compile Include="TrackList.cs" />
+    <Compile Include="Converters\TimeConverter.cs" />
+    <Compile Include="Models\Track.cs" />
+    <Compile Include="Controllers\TrackList.cs" />
+    <Compile Include="Converters\ValueSliderConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -136,7 +138,9 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\activeSound.png" />
     <Content Include="Assets\deleteTrack.png" />
+    <Content Include="Assets\disactiveSound256.png" />
     <Content Include="Assets\nextButton.png" />
     <Content Include="Assets\pause.png" />
     <Content Include="Assets\play.png" />

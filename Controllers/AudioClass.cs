@@ -9,6 +9,7 @@ using Windows.Media.Devices;
 using Windows.Media.MediaProperties;
 using Windows.Media.Render;
 using Windows.Storage;
+using Windows.Storage.AccessCache;
 using Windows.UI.Popups;
 
 namespace MyMusicPlayer
@@ -34,7 +35,16 @@ namespace MyMusicPlayer
 
         public static async Task<AudioFileInputNode> CreateFileInputNode(Track track, AudioGraph audioGraph)
         {
-            var trackFile = await StorageFile.GetFileFromPathAsync(track.Name);
+            StorageFile trackFile = null;
+
+            try
+            {
+                trackFile = await StorageFile.GetFileFromPathAsync(track.Name);
+            }
+            catch
+            {
+                return null;
+            }
 
             // file null check code omitted
 
