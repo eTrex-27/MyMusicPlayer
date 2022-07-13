@@ -9,6 +9,10 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Width="800" Height="400">
 
     <Page.Resources>
+        <local:TimeConverter x:Key="TimeConverter"/>
+        <local:ValueSliderConverter x:Key="SliderConverter"/>
+        <CollectionViewSource x:Name="TracksCollection" Source="{x:Bind TrackListView.Tracks}"/>
+        <JumpListItemBackgroundConverter x:Key="JumpListItemBackgroundConverter"/>
         <Style x:Key="CircleButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}"/>
             <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}"/>
@@ -89,7 +93,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
-                <ListView x:Name="listMusic" ItemsSource="{x:Bind TrackListView.Tracks}" RightTapped="listMusic_RightTapped" SelectionChanged="listMusic_SelectionChanged">
+                <ListView x:Name="listMusic" ItemsSource="{Binding Source={StaticResource TracksCollection}}" RightTapped="listMusic_RightTapped" SelectionChanged="listMusic_SelectionChanged" CanReorderItems="True">
                     <ListView.ItemTemplate>
                         <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="local:Track">
                             <Grid>
@@ -99,13 +103,13 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid Grid.Column="0">
-                                    <TextBlock Text="{x:Bind Id}" Style="{ThemeResource BaseTextBlockStyle}" Foreground="{ThemeResource SystemControlPageTextBaseHighBrush}" Margin="12,0,0,0"/>
+                                    <TextBlock Text="{x:Bind Id, Mode=TwoWay}" Style="{ThemeResource BaseTextBlockStyle}" Foreground="{ThemeResource SystemControlPageTextBaseHighBrush}" Margin="12,0,0,0"/>
                                 </Grid>
                                 <Grid Grid.Column="1">
-                                    <TextBlock Text="{x:Bind GetName}" Style="{ThemeResource BaseTextBlockStyle}" Foreground="{ThemeResource SystemControlPageTextBaseHighBrush}" Margin="12,0,0,0"/>
+                                    <TextBlock Text="{x:Bind GetName, Mode=OneWay}" Style="{ThemeResource BaseTextBlockStyle}" Foreground="{ThemeResource SystemControlPageTextBaseHighBrush}" Margin="12,0,0,0"/>
                                 </Grid>
                                 <Grid Grid.Column="2">
-                                    <TextBlock Text="{x:Bind Duration}" Style="{ThemeResource BaseTextBlockStyle}" Foreground="{ThemeResource SystemControlPageTextBaseHighBrush}" Margin="12,0,0,0"/>
+                                    <TextBlock Text="{x:Bind Duration, Mode=TwoWay}" Style="{ThemeResource BaseTextBlockStyle}" Foreground="{ThemeResource SystemControlPageTextBaseHighBrush}" Margin="12,0,0,0"/>
                                 </Grid>
                             </Grid>
                         </DataTemplate>
@@ -134,23 +138,23 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="200"/>
             </Grid.RowDefinitions>
-            <Grid x:Name="RowInfo" Grid.Row="0" Height="Auto" Width="Auto">
+            <Grid x:Name="RowInfo" Grid.Row="0">
                 <StackPanel>
                     <TextBlock x:Name="trackName" Text="trackName" HorizontalAlignment="Center"/>
-                    <Image Height="{Binding Height, ElementName=RowInfo, Mode=TwoWay}" Width="{Binding Width, ElementName=RowInfo, Mode=TwoWay}" Source="/Assets/SplashScreen.scale-200.png"/>
+                    <Image x:Name="trackImage" Source="/Assets/disactiveSound256.png" Width="190"/>
                     <!--<Slider x:Name="SliderSize" Width="300"/>-->
                 </StackPanel>
             </Grid>
             <Grid Grid.Row="1">
                 <StackPanel>
-                    <Slider x:Name="SliderTime" Width="300" Margin="0,10,0,0"/>
+                    <Slider x:Name="SliderTime" Width="300" Margin="0,10,0,0" ThumbToolTipValueConverter="{StaticResource SliderConverter}" ValueChanged="SliderTime_ValueChanged" Value="{Binding Value, ElementName=AudioFileInputNode}"/>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0">
-                            <TextBlock x:Name="CurrentTime" Text="00:00" Margin="40,0,0,0"/>
+                            <TextBlock x:Name="CurrentTime" Text="{Binding Value, ElementName=SliderTime, Mode=OneWay, Converter={StaticResource TimeConverter}}" Margin="40,0,0,0"/>
                         </Grid>
                         <Grid Grid.Column="1">
                             <TextBlock x:Name="DurationTime" Text="00:00" Margin="0,0,35,0" HorizontalAlignment="Right"/>

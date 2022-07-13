@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -27,7 +28,11 @@ namespace MyMusicPlayer
     {
         BitmapImage bitmapPlay = new BitmapImage(new Uri("ms-appx:///Assets/play.png", UriKind.Absolute));
         BitmapImage bitmapPause = new BitmapImage(new Uri("ms-appx:///Assets/pause.png", UriKind.Absolute));
+        BitmapImage bitmapActiveSound = new BitmapImage(new Uri("ms-appx:///Assets/activeSound.png", UriKind.Absolute));
+        BitmapImage bitmapDisactiveSound = new BitmapImage(new Uri("ms-appx:///Assets/disactiveSound256.png", UriKind.Absolute));
 
+        public TracksViewModel TrackListView { get; set; }
+        public Track Track { get; set; }
         public AudioGraph audioGraph { get; set; }
         public AudioDeviceOutputNode deviceOutputNode { get; set; }
         public AudioFileInputNode fileInputNode { get; set; }
@@ -42,45 +47,111 @@ namespace MyMusicPlayer
             PlayImage.Source = bitmapPlay;
 
             listMusic.SelectedIndex = 0;
+
+            TrackListView.Tracks.CollectionChanged += Tracks_CollectionChanged;
         }
 
-        private async void SetDuration()
+        private void Tracks_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            foreach (var track in TrackListView.Tracks)
+            switch (e.Action)
             {
-                audioGraph = await AudioClass.CreateGraph();
-                fileInputNode = await AudioClass.CreateFileInputNode(track, audioGraph);
-
-                track.Duration = $"{fileInputNode.Duration.Minutes}:{fileInputNode.Duration.Seconds}";
+                case NotifyCollectionChangedAction.Add: // если добавление
+                    if (e.NewItems?[0] is Track newTrack)
+                    {
+                        Console.WriteLine($"Добавлен новый объект: {newTrack.Name}");
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove: // если удаление
+                    if (e.OldItems?[0] is Track oldTrack)
+                    {
+                        int id = 1;
+                        foreach (var item in TrackListView.Tracks)
+                        {
+                            item.Id = id++;
+                        }
+                        TrackList.SaveTracks(TrackListView.Tracks);
+                        Console.WriteLine($"Удален объект: {oldTrack.Name}");
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Replace: // если замена
+                    if ((e.NewItems?[0] is Track replacingTrack) &&
+                        (e.OldItems?[0] is Track replacedTrack))
+                        Console.WriteLine($"Объект {replacedTrack.Name} заменен объектом {replacingTrack.Name}");
+                    break;
             }
         }
 
-        public TracksViewModel TrackListView { get; set; }
-        public Track Track { get; set; }
+        private async Task SetDurationTrack(Track newTrack)
+        {
+            AudioGraph audioGraphTemp = await AudioClass.CreateGraph();
+            AudioFileInputNode fileInputNodeTemp = await AudioClass.CreateFileInputNode(newTrack, audioGraphTemp);
+            string duration = GetDuration(fileInputNodeTemp);
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+            newTrack.SetDuration(duration);
+
+            fileInputNodeTemp.Dispose();
+            audioGraphTemp.Dispose();
+        }
+
+        private static string GetDuration(AudioFileInputNode fileInputNode)
+        {
+            var duration = "";
+
+            var seconds = fileInputNode.Duration.Seconds.ToString();
+
+            var minutes = fileInputNode.Duration.Minutes.ToString();
+
+            var hours = fileInputNode.Duration.Hours.ToString();
+
+            if (minutes.Length == 1)
+                minutes = "0" + minutes;
+
+            if (seconds.Length == 1)
+                seconds = "0" + seconds;
+
+            if (!hours.Equals("0"))
+            {
+                if (hours.Length == 1)
+                    hours = "0" + hours;
+
+                duration = $"{hours}:{minutes}:{seconds}";
+            }
+            else
+            {
+                duration = $"{minutes}:{seconds}";
+            }
+
+            return duration;
+        }
+
+        protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
             var tracks = (ObservableCollection<Track>)e.Parameter;
 
             foreach (Track track in tracks)
             {
+                await SetDurationTrack(track);
                 TrackListView.Tracks.Add(track);
             }
 
             TrackList.SaveTracks(tracks);
-
-            //SetDuration();
         }
 
         private void Play_Click(object sender, RoutedEventArgs e)
         {
-            if (PlayImage.Source == bitmapPlay)
+            if (PlayImage.Source == bitmapPause)
             {
-                PlayImage.Source = bitmapPause;
+                if (audioGraph != null)
+                    audioGraph.Stop();
+                trackImage.Source = bitmapDisactiveSound;
+                PlayImage.Source = bitmapPlay;
             }
             else
             {
-                PlayImage.Source = bitmapPlay;
+                if (audioGraph != null)
+                    audioGraph.Start();
+                trackImage.Source = bitmapActiveSound;
+                PlayImage.Source = bitmapPause;
             }
         }
 
@@ -122,6 +193,12 @@ namespace MyMusicPlayer
                 openPicker.FileTypeFilter.Add(".wav");
                 filesList = await openPicker.PickMultipleFilesAsync();
 
+                if (filesList != null)
+                {
+                    foreach (StorageFile file in filesList)
+                        StorageApplicationPermissions.FutureAccessList.Add(file);
+                }
+
                 var id = TrackList.GetTracks().Count + 1;
 
                 var listFiles= TrackList.GetListFiles(TrackListView.Tracks);
@@ -129,7 +206,11 @@ namespace MyMusicPlayer
                 foreach (var file in filesList)
                 {
                     if (!listFiles.Contains(file.Path))
-                        TrackListView.Tracks.Add(new Track(id++, file.Path, "0:00"));
+                    {
+                        var track = new Track(id++, file.Path, "0:00");
+                        await SetDurationTrack(track);
+                        TrackListView.Tracks.Add(track);
+                    }
                 }
             }
             catch
@@ -164,7 +245,7 @@ namespace MyMusicPlayer
                     TrackListView.Tracks.RemoveAt(item.Id - 1);
             }
 
-            var refreshing = false;
+            /*var refreshing = false;
 
             foreach (var id in listIds)
             {
@@ -173,9 +254,9 @@ namespace MyMusicPlayer
                     refreshing = true;
                     break;
                 }
-            }
+            }*/
 
-            if (refreshing)
+            //if (refreshing)
             {
                 var refreshList = TrackList.ReindexList(TrackListView.Tracks);
 
@@ -224,7 +305,7 @@ namespace MyMusicPlayer
             if (command.Label.Equals("Да"))
             {
                 TrackListView.Tracks.RemoveAt((command.Id as Track).Id - 1);
-                RefreshingList((command.Id as Track).Id);
+                //RefreshingList((command.Id as Track).Id);
             }
             else if (command.Label.Equals("Отмена"))
             {
@@ -233,13 +314,22 @@ namespace MyMusicPlayer
         }
 
         private async void listMusic_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (audioGraph != null) audioGraph.Dispose();
-
+        {         
             int trackId;
             try
             {
                 trackId = (sender as ListView).SelectedIndex;
+
+                if (trackId == -1)
+                {
+                    return;
+                }
+
+                try
+                {
+                    if (audioGraph != null) audioGraph.Dispose();
+                }
+                catch { }
             }
             catch
             {
@@ -251,7 +341,23 @@ namespace MyMusicPlayer
             fileInputNode = await AudioClass.CreateFileInputNode(TrackListView.Tracks[trackId], audioGraph);
             AudioClass.ConnectNodes(fileInputNode, deviceOutputNode);
 
+            DurationTime.Text = GetDuration(fileInputNode);
+            trackName.Text = TrackListView.Tracks[trackId].GetName;
+            
             audioGraph.Start();
+
+            SliderTime.Value = 0;
+            SliderTime.Maximum = fileInputNode.Duration.TotalSeconds;
+
+            trackImage.Source = bitmapActiveSound;
+            PlayImage.Source = bitmapPause;
         }
+
+        private void SliderTime_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            fileInputNode.Seek(TimeSpan.FromSeconds(SliderTime.Value));
+        }
+
+
     }
 }
