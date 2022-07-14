@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyMusicPlayer.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -12,6 +13,7 @@ using Windows.Media.Audio;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
+using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -36,6 +38,7 @@ namespace MyMusicPlayer
         public AudioGraph audioGraph { get; set; }
         public AudioDeviceOutputNode deviceOutputNode { get; set; }
         public AudioFileInputNode fileInputNode { get; set; }
+        public AudioTrack audioTrack { get; set; }
         public MusicPage()
         {
             this.InitializeComponent();
@@ -346,6 +349,20 @@ namespace MyMusicPlayer
             
             audioGraph.Start();
 
+            audioTrack = new AudioTrack(fileInputNode, audioGraph);
+
+            //audioTrack.PropertyChanged += AudioTrack_PropertyChanged;
+
+            var timer = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 1) }; // 1 секунда
+            timer.Tick += Timer_Tick;
+            timer.Start();
+
+            /*await Task.Factory.StartNew(() =>
+            {
+                while(fileInputNode != null)
+                    audioTrack.Position = fileInputNode.Position;
+            });*/
+
             SliderTime.Value = 0;
             SliderTime.Maximum = fileInputNode.Duration.TotalSeconds;
 
@@ -353,11 +370,22 @@ namespace MyMusicPlayer
             PlayImage.Source = bitmapPause;
         }
 
-        private void SliderTime_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        private void Timer_Tick(object sender, object e)
         {
-            fileInputNode.Seek(TimeSpan.FromSeconds(SliderTime.Value));
+            ignoreChange = true;
+            SliderTime.Value = Convert.ToDouble(fileInputNode.Position.TotalSeconds);
+            ignoreChange = false;
         }
 
-
+        private async void AudioTrack_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            await Dispatcher.TryRunAsync(CoreDispatcherPriority.Normal, () => SliderTime.Value = Convert.ToDouble(audioTrack.Position.TotalSeconds));
+        }
+        bool ignoreChange = false;
+        private void SliderTime_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (ignoreChange) return;
+            fileInputNode.Seek(TimeSpan.FromSeconds(SliderTime.Value));
+        }
     }
 }
