@@ -1,5 +1,4 @@
-﻿using MyMusicPlayer.Controllers;
-using MyMusicPlayer.Models;
+﻿using MyMusicPlayer.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

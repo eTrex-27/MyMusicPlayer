@@ -120,7 +120,6 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\AudioClass.cs" />
-    <Compile Include="Controllers\ShuffleList.cs" />
     <Compile Include="Models\AudioTrack.cs" />
     <Compile Include="MusicPage.xaml.cs">
       <DependentUpon>MusicPage.xaml</DependentUpon>
