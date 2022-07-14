@@ -1,5 +1,4 @@
-﻿using MyMusicPlayer.Controllers;
-using MyMusicPlayer.Models;
+﻿using MyMusicPlayer.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -34,9 +33,10 @@ namespace MyMusicPlayer
         BitmapImage bitmapActiveSound = new BitmapImage(new Uri("ms-appx:///Assets/activeSound.png", UriKind.Absolute));
         BitmapImage bitmapDisactiveSound = new BitmapImage(new Uri("ms-appx:///Assets/disactiveSound256.png", UriKind.Absolute));
 
-        bool repeatPressed = false;
-        bool shufflePressed = false;
-        Track currentTrack = null;
+        enum StateLoop { NoLoop, Loop };
+        enum StateShuffle { NoShuffle, Shuffle };
+
+        int currentTrackId = -1;
         bool ignoreChange = false;
         public TracksViewModel TrackListView { get; set; }
         public Track Track { get; set; }
@@ -57,9 +57,6 @@ namespace MyMusicPlayer
             listMusic.SelectedIndex = 0;
 
             TrackListView.Tracks.CollectionChanged += Tracks_CollectionChanged;
-
-            repeatPressed = false;
-            shufflePressed = false;
         }
 
         private void Tracks_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -170,19 +167,12 @@ namespace MyMusicPlayer
         {
             if (listMusic.SelectedIndex == -1)
             {
-                if (currentTrack.Id != -1)
+                if (currentTrackId != -1)
                 {
-                    if (shufflePressed && !repeatPressed)
-                    {
-                        SelectRandomTrack();
-                    }
+                    if (currentTrackId == 0)
+                        listMusic.SelectedIndex = TrackListView.Tracks.Count - 1;
                     else
-                    {
-                        if (currentTrack.Id == 0)
-                            listMusic.SelectedIndex = TrackListView.Tracks.Count - 1;
-                        else
-                            listMusic.SelectedIndex = currentTrack.Id - 1;
-                    }
+                        listMusic.SelectedIndex = currentTrackId - 1;
                 }
                 else
                 {
@@ -191,17 +181,10 @@ namespace MyMusicPlayer
             }
             else
             {
-                if (shufflePressed && !repeatPressed)
-                {
-                    SelectRandomTrack();
-                }
+                if (listMusic.SelectedIndex == 0)
+                    listMusic.SelectedIndex = TrackListView.Tracks.Count - 1;
                 else
-                {
-                    if (listMusic.SelectedIndex == 0)
-                        listMusic.SelectedIndex = TrackListView.Tracks.Count - 1;
-                    else
-                        listMusic.SelectedIndex -= 1;
-                }
+                    listMusic.SelectedIndex -= 1;
             }
         }
 
@@ -214,19 +197,12 @@ namespace MyMusicPlayer
         {
             if (listMusic.SelectedIndex == -1)
             {
-                if (currentTrack.Id != -1)
+                if (currentTrackId != -1)
                 {
-                    if (shufflePressed && !repeatPressed)
-                    {
-                        SelectRandomTrack();
-                    }
+                    if (currentTrackId == TrackListView.Tracks.Count - 1)
+                        listMusic.SelectedIndex = 0;
                     else
-                    {
-                        if (currentTrack.Id == TrackListView.Tracks.Count)
-                            listMusic.SelectedIndex = 0;
-                        else
-                            listMusic.SelectedIndex = currentTrack.Id + 1;
-                    }
+                        listMusic.SelectedIndex = currentTrackId + 1;
                 }
                 else
                 {
@@ -235,67 +211,21 @@ namespace MyMusicPlayer
             }
             else
             {
-                if (shufflePressed && !repeatPressed)
-                {
-                    SelectRandomTrack();
-                }
+                if (listMusic.SelectedIndex == TrackListView.Tracks.Count - 1)
+                    listMusic.SelectedIndex = 0;
                 else
-                {
-                    if (listMusic.SelectedIndex == TrackListView.Tracks.Count - 1)
-                        listMusic.SelectedIndex = 0;
-                    else
-                        listMusic.SelectedIndex += 1;
-                }
-            }
-        }
-
-        private void SelectRandomTrack()
-        {
-            int randomValue = new Random().Next(TrackListView.Tracks.Count - 1);
-            if (listMusic.SelectedIndex == randomValue)
-            {
-                try
-                {
-                    listMusic.SelectedIndex = randomValue + 1;
-                }
-                catch
-                {
-                    listMusic.SelectedIndex = randomValue - 1;
-                }
-            }
-            else
-            {
-                listMusic.SelectedIndex = randomValue;
+                    listMusic.SelectedIndex += 1;
             }
         }
 
         private void Repeat_Click(object sender, RoutedEventArgs e)
         {
-            if (repeatPressed)
-            {
-                RepeatButton.Style = (Style)Resources["CircleButtonStyle"];
-                repeatPressed = false;
-            }
-            else
-            {
-                RepeatButton.Style = (Style)Resources["CircleButtonStylePressed"];
-                repeatPressed = true;
-            }
-            
+
         }
 
         private void Shuffle_Click(object sender, RoutedEventArgs e)
         {
-            if (shufflePressed)
-            {
-                ShuffleButton.Style = (Style)Resources["CircleButtonStyle"];
-                shufflePressed = false;
-            }
-            else
-            {
-                ShuffleButton.Style = (Style)Resources["CircleButtonStylePressed"];
-                shufflePressed = true;
-            }
+
         }
 
         private void Volume_Click(object sender, RoutedEventArgs e)
@@ -450,7 +380,7 @@ namespace MyMusicPlayer
                 try
                 {
                     if (audioGraph != null) audioGraph.Dispose();
-                    currentTrack = (sender as ListView).SelectedItem as Track;
+                    currentTrackId = trackId;
                 }
                 catch { }
             }
@@ -459,44 +389,34 @@ namespace MyMusicPlayer
                 return;
             }
 
-            try
-            {
-                audioGraph = await AudioClass.CreateGraph();
-                deviceOutputNode = await AudioClass.CreateDefaultDeviceOutputNode(audioGraph);
-                fileInputNode = await AudioClass.CreateFileInputNode(TrackListView.Tracks[trackId], audioGraph);
-                AudioClass.ConnectNodes(fileInputNode, deviceOutputNode);
+            audioGraph = await AudioClass.CreateGraph();
+            deviceOutputNode = await AudioClass.CreateDefaultDeviceOutputNode(audioGraph);
+            fileInputNode = await AudioClass.CreateFileInputNode(TrackListView.Tracks[trackId], audioGraph);
+            AudioClass.ConnectNodes(fileInputNode, deviceOutputNode);
 
-                fileInputNode.FileCompleted += FileInputNode_FileCompleted;
+            fileInputNode.FileCompleted += FileInputNode_FileCompleted;
 
-                DurationTime.Text = GetDuration(fileInputNode);
-                trackName.Text = TrackListView.Tracks[trackId].GetName;
+            DurationTime.Text = GetDuration(fileInputNode);
+            trackName.Text = TrackListView.Tracks[trackId].GetName;
+            
+            audioGraph.Start();
 
-                audioGraph.Start();
+            audioTrack = new AudioTrack(fileInputNode, audioGraph);
 
-                audioTrack = new AudioTrack(fileInputNode, audioGraph);
+            var timer = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 1) }; // 1 секунда
+            timer.Tick += Timer_Tick;
+            timer.Start();
 
-                var timer = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 1) };
-                timer.Tick += Timer_Tick;
-                timer.Start();
+            SliderTime.Value = 0;
+            SliderTime.Maximum = fileInputNode.Duration.TotalSeconds;
 
-                SliderTime.Value = 0;
-                SliderTime.Maximum = Math.Round(fileInputNode.Duration.TotalSeconds);
-
-                trackImage.Source = bitmapActiveSound;
-                PlayImage.Source = bitmapPause;
-            }
-            catch
-            {
-                listMusic.SelectedIndex = 0;
-            }
+            trackImage.Source = bitmapActiveSound;
+            PlayImage.Source = bitmapPause;
         }
 
         private async void FileInputNode_FileCompleted(AudioFileInputNode sender, object args)
         {
-            if (!repeatPressed)
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => PlayNextTrack());
-            else
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => SliderTime.Value = 0);
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => PlayNextTrack());
         }
 
         private void Timer_Tick(object sender, object e)
@@ -509,13 +429,7 @@ namespace MyMusicPlayer
         private void SliderTime_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (ignoreChange) return;
-            try
-            {
-                fileInputNode.Seek(TimeSpan.FromSeconds(SliderTime.Value));
-            }
-            catch {
-                PlayNextTrack();
-            }
+            fileInputNode.Seek(TimeSpan.FromSeconds(SliderTime.Value));
         }
     }
 }
