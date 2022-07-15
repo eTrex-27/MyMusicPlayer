@@ -144,28 +144,39 @@ namespace MyMusicPlayer
 
         private async void Grid_Drop(object sender, DragEventArgs e)
         {
-            List<StorageFile> listMusic = new List<StorageFile>();
+            ObservableCollection<Track> listMusic = new ObservableCollection<Track>();
+
+            var currentTracks = TrackList.GetTracks();
 
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
                 var items = await e.DataView.GetStorageItemsAsync();
                 if (items.Count > 0)
                 {
+                    var listFiles = TrackList.GetListFiles(currentTracks);
+
+                    var countCurrentTracks = currentTracks.Count != 0 ? currentTracks.Last().Id : 0;
+
+                    var id = countCurrentTracks + 1;
                     foreach (var item in items)
                     {
                         var storageFile = item as StorageFile;
 
-                        if (storageFile.FileType == ".mp3" || storageFile.FileType == ".wav")
+                        StorageApplicationPermissions.FutureAccessList.Add(storageFile);
+
+                        if ((storageFile.FileType == ".mp3" || storageFile.FileType == ".wav") && !listFiles.Contains(storageFile.Path))
                         {
-                            listMusic.Add(storageFile);
+                            var track = new Track(id++, storageFile.Path, "0:00");
+                            await MusicPage.SetDurationTrack(track);
+                            currentTracks.Add(track);
                         }
                     }
 
-                    if (listMusic.Count != 0)
+                    if (currentTracks.Count != 0)
                     {
                         try
                         {
-                            Frame.Navigate(typeof(MusicPage), listMusic, new SuppressNavigationTransitionInfo());
+                            Frame.Navigate(typeof(MusicPage), currentTracks, new SuppressNavigationTransitionInfo());
                         }
                         catch
                         {

@@ -14,13 +14,6 @@ namespace MyMusicPlayer
             TimeSpan time = TimeSpan.FromSeconds((double)value);
 
             return time.ToString(@"mm\:ss");
-            /*double valueSlider = (double)value;
-            if (valueSlider.ToString().Length > 1)
-                return $"00:{valueSlider}";
-            else if (valueSlider.ToString().Length == 1)
-                return $"00:0{valueSlider}";
-            else
-                return string.Empty;*/
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

@@ -207,14 +207,14 @@
             </Grid.RowDefinitions>
             <Grid x:Name="RowInfo" Grid.Row="0">
                 <StackPanel>
-                    <TextBlock x:Name="trackName" Text="trackName" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="trackName" Text="" HorizontalAlignment="Center"/>
                     <Image x:Name="trackImage" Source="/Assets/disactiveSound256.png" Width="190"/>
                     <!--<Slider x:Name="SliderSize" Width="300"/>-->
                 </StackPanel>
             </Grid>
             <Grid Grid.Row="1">
                 <StackPanel>
-                    <Slider x:Name="SliderTime" Width="300" Margin="0,10,0,0" ThumbToolTipValueConverter="{StaticResource SliderConverter}" ValueChanged="SliderTime_ValueChanged" Value="{Binding Value, ElementName=AudioFileInputNode}"/>
+                    <Slider x:Name="SliderTime" Width="300" Margin="0,10,0,0" ThumbToolTipValueConverter="{StaticResource SliderConverter}" Value="{Binding Value, ElementName=AudioFileInputNode}" ManipulationCompleted="SliderTime_ManipulationCompleted" ManipulationMode="All" ManipulationStarted="SliderTime_ManipulationStarted"/>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -271,9 +271,21 @@
                                 </Button>
                             </Grid>
                             <Grid Grid.Column="2">
-                                <Button x:Name="VolumeButton" Width="30" Height="30" BorderBrush="Black" Style="{StaticResource CircleButtonStyle}" HorizontalAlignment="Center" FontSize="10" FontFamily="Arial" FontWeight="Normal" Click="Volume_Click">
-                                    <Image x:Name="VolumeImage" Source="/Assets/volume.png"/>
-                                </Button>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Grid.Column="0">
+                                        <Button x:Name="VolumeButton" Width="30" Height="30" BorderBrush="Black" Style="{StaticResource CircleButtonStyle}" HorizontalAlignment="Center" FontSize="10" FontFamily="Arial" FontWeight="Normal" Click="Volume_Click">
+                                            <Image x:Name="VolumeImage" Source="/Assets/volume.png"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid Grid.Column="1">
+                                        <Slider x:Name="SliderVolume" Orientation="Vertical" Margin="0, 0, 0, 60" ValueChanged="SliderVolume_ValueChanged"/>
+                                    </Grid>
+                                </Grid>
+                                
                             </Grid>
                         </Grid>
                     </Grid>
