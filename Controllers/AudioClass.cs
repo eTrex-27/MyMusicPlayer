@@ -74,6 +74,7 @@ namespace MyMusicPlayer
 
         public static void ConnectNodes(AudioFileInputNode fileInputNode, AudioDeviceOutputNode deviceOutputNode)
         {
+            if (fileInputNode == null) return;
             fileInputNode.AddOutgoingConnection(deviceOutputNode);
         }
     }
