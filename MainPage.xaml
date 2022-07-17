@@ -6,9 +6,18 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Width="800" Height="400">
 
-    <Grid>
-
+    <Grid AllowDrop="True">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0">
+            <StackPanel VerticalAlignment="Center" AllowDrop="True" DragOver="Grid_DragOverCustomized" DragLeave="Grid_DragLeave" Drop="Grid_Drop" >
+                <Button x:Name="OpenFileButton" HorizontalAlignment="Center" FontFamily="Arial" FontSize="20" CornerRadius="5" Click="OpenFileButton_Click" AllowDrop="False" />
+                <TextBlock x:Name="LabelOR" HorizontalAlignment="Center" FontFamily="Arial" FontSize="18"/>
+                <TextBlock x:Name="LabelDragAndDrop" HorizontalAlignment="Center" FontFamily="Arial" FontSize="18"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>
