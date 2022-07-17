@@ -1,5 +1,4 @@
-﻿using MyMusicPlayer.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -26,6 +25,9 @@ using Windows.UI.Xaml.Navigation;
 
 namespace MyMusicPlayer
 {
+    /// <summary>
+    /// Music player page with the ability to add and edit a playlist, as well as control the playback of tracks.
+    /// </summary>
     public sealed partial class MusicPage : Page
     {
         BitmapImage bitmapPlay = new BitmapImage(new Uri("ms-appx:///Assets/play.png", UriKind.Absolute));
@@ -39,14 +41,17 @@ namespace MyMusicPlayer
 
         int currentTrackId = -1;
         bool ignoreChange = false;
-        public TracksViewModel TrackListView { get; set; }
-        public Track Track { get; set; }
-        public AudioGraph audioGraph { get; set; }
-        public AudioDeviceOutputNode deviceOutputNode { get; set; }
-        public AudioFileInputNode fileInputNode { get; set; }
-        public AudioTrack audioTrack { get; set; }
+        private TracksViewModel TrackListView { get; set; }
+        private Track Track { get; set; }
+        private AudioGraph audioGraph { get; set; }
+        private AudioDeviceOutputNode deviceOutputNode { get; set; }
+        private AudioFileInputNode fileInputNode { get; set; }
 
         DispatcherTimer timer = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 1) };
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MusicPage" /> class.
+        /// </summary>
         public MusicPage()
         {
             this.InitializeComponent();
@@ -66,6 +71,9 @@ namespace MyMusicPlayer
 
             SliderVolume.Visibility = Visibility.Collapsed;
             SliderVolume.Value = 100;
+
+            timer.Tick += Timer_Tick;
+            timer.Start();
         }
 
         private void Tracks_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -98,6 +106,8 @@ namespace MyMusicPlayer
             }
         }
 
+        /// <summary>Sets the duration of the newly added track.</summary>
+        /// <param name="newTrack">Track.</param>
         public static async Task SetDurationTrack(Track newTrack)
         {
             AudioGraph audioGraphTemp = await AudioClass.CreateGraph();
@@ -141,6 +151,14 @@ namespace MyMusicPlayer
             return duration;
         }
 
+        /// <summary>
+        /// Called when the Page is loaded and becomes the origin of the parent Frame.
+        /// </summary>
+        /// <param name="e">
+        /// Event data that can be checked with code overrides.
+        /// These events represent delayed navigation that will cause the current Page to load.
+        /// The Parameter property is most often checked.
+        /// </param>
         protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
             var tracks = (ObservableCollection<Track>)e.Parameter;
@@ -430,19 +448,6 @@ namespace MyMusicPlayer
                 TrackListView.Tracks.Add(item);
         }
 
-        private void RefreshingList(int id)
-        {
-            if (id < TrackListView.Tracks.Count + 1 || TrackListView.Tracks.Count == 0)
-            {
-                var refreshList = TrackList.ReindexList(TrackListView.Tracks);
-
-                TrackListView.Tracks.Clear();
-
-                foreach (var item in refreshList)
-                    TrackListView.Tracks.Add(item);
-            }
-        }
-
         private async void listMusic_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             try
@@ -506,17 +511,12 @@ namespace MyMusicPlayer
                 deviceOutputNode = await AudioClass.CreateDefaultDeviceOutputNode(audioGraph);
                 fileInputNode = await AudioClass.CreateFileInputNode(TrackListView.Tracks[trackId], audioGraph);
                 AudioClass.ConnectNodes(fileInputNode, deviceOutputNode);
-
-                fileInputNode.FileCompleted += FileInputNode_FileCompleted;
-                audioGraph.UnrecoverableErrorOccurred += AudioGraph_UnrecoverableErrorOccurred;
-
-                DurationTime.Text = GetDuration(fileInputNode);
-                trackName.Text = TrackListView.Tracks[trackId].GetName;
+                SetTrackInfo(trackId);
 
                 audioGraph.Start();
 
-                timer.Tick += Timer_Tick;
-                timer.Start();
+                fileInputNode.FileCompleted += FileInputNode_FileCompleted;
+                audioGraph.UnrecoverableErrorOccurred += AudioGraph_UnrecoverableErrorOccurred;
 
                 SliderTime.Value = 0;
                 SliderTime.Maximum = fileInputNode.Duration.TotalSeconds;
@@ -530,6 +530,12 @@ namespace MyMusicPlayer
             {
                 return;
             }
+        }
+
+        private void SetTrackInfo(int trackId)
+        {
+            DurationTime.Text = GetDuration(fileInputNode);
+            trackName.Text = TrackListView.Tracks[trackId].GetName;
         }
 
         private void AudioGraph_UnrecoverableErrorOccurred(AudioGraph sender, AudioGraphUnrecoverableErrorOccurredEventArgs args)

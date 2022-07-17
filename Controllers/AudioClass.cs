@@ -14,9 +14,16 @@ using Windows.UI.Popups;
 
 namespace MyMusicPlayer
 {
+    /// <summary>
+    /// Allows to create AudioGraph, AudioFileInputNode and AudioDeviceOutputNode.
+    /// </summary>
     public class AudioClass
     {
 
+        /// <summary>Creates the AudioGraph.</summary>
+        /// <returns>
+        /// AudioGraph object.
+        /// </returns>
         public static async Task<AudioGraph> CreateGraph()
         {
             // Specify settings for graph, the AudioRenderCategory helps to optimize audio processing
@@ -33,6 +40,12 @@ namespace MyMusicPlayer
             return result.Graph;
         }
 
+        /// <summary>Creates the AudioFileInputNode.</summary>
+        /// <param name="track">Track.</param>
+        /// <param name="audioGraph">AudioGraph.</param>
+        /// <returns>
+        /// AudioFileInputNode object.
+        /// </returns>
         public static async Task<AudioFileInputNode> CreateFileInputNode(Track track, AudioGraph audioGraph)
         {
             StorageFile trackFile = null;
@@ -59,6 +72,11 @@ namespace MyMusicPlayer
             return result.FileInputNode;
         }
 
+        /// <summary>Creates the AudioDeviceOutputNode.</summary>
+        /// <param name="audioGraph">AudioGraph.</param>
+        /// <returns>
+        /// AudioDeviceOutputNode object.
+        /// </returns>
         public static async Task<AudioDeviceOutputNode> CreateDefaultDeviceOutputNode(AudioGraph audioGraph)
         {
             CreateAudioDeviceOutputNodeResult result = await audioGraph.CreateDeviceOutputNodeAsync();
@@ -72,6 +90,9 @@ namespace MyMusicPlayer
             return result.DeviceOutputNode;
         }
 
+        /// <summary>Connects the nodes AudioFileInputNode and AudioDeviceOutputNode.</summary>
+        /// <param name="fileInputNode">AudioFileInputNode.</param>
+        /// <param name="deviceOutputNode">AudioDeviceOutputNode.</param>
         public static void ConnectNodes(AudioFileInputNode fileInputNode, AudioDeviceOutputNode deviceOutputNode)
         {
             if (fileInputNode == null) return;

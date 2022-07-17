@@ -23,6 +23,9 @@ using Windows.Media.Audio;
 
 namespace MyMusicPlayer
 {
+    /// <summary>
+    /// Start page.
+    /// </summary>
     public sealed partial class MainPage : Page
     {
         class StartPageInfo
@@ -42,6 +45,9 @@ namespace MyMusicPlayer
 
         private StartPageInfo pageInfo;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainPage" /> class.
+        /// </summary>
         public MainPage()
         {
             this.pageInfo = new StartPageInfo();

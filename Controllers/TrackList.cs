@@ -10,11 +10,16 @@ using System.Collections.ObjectModel;
 
 namespace MyMusicPlayer
 {
+    /// <summary>
+    /// The class allows to get tracks and save them
+    /// using the automatically generated TrackList.json file
+    /// in the local application folder.
+    /// </summary>
     public class TrackList
     {
         static string jsonPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "TrackList.json");
 
-        public static string ReadFile(string file)
+        private static string ReadFile(string file)
         {
             string info = "";
             using (StreamReader reader = new StreamReader(file))
@@ -24,6 +29,11 @@ namespace MyMusicPlayer
             return info;
         }
 
+        /// <summary>Getting a list of track names from the current playlist.</summary>
+        /// <param name="currentTracks">The current playlist.</param>
+        /// <returns>
+        /// List of track names.
+        /// </returns>
         public static List<string> GetListFiles(ObservableCollection<Track> currentTracks)
         {
             List<string> names = new List<string>();
@@ -36,6 +46,10 @@ namespace MyMusicPlayer
             return names;
         }
 
+        /// <summary>Getting the current track list from the TrackList.json file.</summary>
+        /// <returns>
+        /// List of tracks.
+        /// </returns>
         public static ObservableCollection<Track> GetTracks()
         {
             try
@@ -55,6 +69,8 @@ namespace MyMusicPlayer
             }
         }
 
+        /// <summary>Saves the current track list from the playlist to the file TrackList.json.</summary>
+        /// <param name="tracks">Tracks.</param>
         public static void SaveTracks(ObservableCollection<Track> tracks)
         {
             if (!File.Exists(jsonPath))
@@ -64,6 +80,13 @@ namespace MyMusicPlayer
             File.WriteAllText(jsonPath, jsonString);
         }
 
+        /// <summary>
+        /// Sets the order of the current tracks from 1 to n,
+        /// saves the track and returns an renumbered list of tracks.</summary>
+        /// <param name="tracks">Tracks.</param>
+        /// <returns>
+        /// Renumbered track list.
+        /// </returns>
         public static ObservableCollection<Track> ReindexList(ObservableCollection<Track> tracks)
         {
             var id = 1;
@@ -75,6 +98,14 @@ namespace MyMusicPlayer
             return GetTracks();
         }
 
+        /// <summary>
+        /// Get track numbers from the current playlist
+        /// that have been deleted or moved.
+        /// </summary>
+        /// <param name="tracks">Tracks.</param>
+        /// <returns>
+        /// List of track numbers.
+        /// </returns>
         public static List<int> RefreshTracks(ObservableCollection<Track> tracks)
         {
             List<int> trackIds= new List<int>();
